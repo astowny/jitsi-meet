@@ -49,3 +49,91 @@ button.primary {
 .participants_pane-header {
     color: var(--translia-blue);
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Prejoin / Lobby = "page de connexion" → thème clair Translia
+   (fond blanc, titres bleus, boutons-icônes bleus dans des ronds blancs ombrés)
+   Tout est limité à .premeeting-screen : la conférence reste inchangée.
+   ────────────────────────────────────────────────────────────────────────── */
+.premeeting-screen {
+    color: var(--translia-text, #555555);
+
+    /* Champ "nom" → carte blanche, focus bleu */
+    #premeeting-name-input {
+        background: #fff !important;
+        color: var(--translia-text, #555555) !important;
+        border: 1px solid var(--translia-line, #D1D1D1) !important;
+        border-radius: 10px !important;
+
+        &::placeholder {
+            color: var(--translia-muted, #B9B6B6) !important;
+        }
+
+        &:focus {
+            box-shadow: 0 0 0 2px rgba(4, 0, 211, 0.35) !important;
+        }
+    }
+
+    /* Statut micro/caméra ("votre microphone fonctionne…") → lisible sur blanc */
+    [role='alert']:not(.device-status-error) {
+        color: var(--translia-text, #555555) !important;
+    }
+
+    /* Barre de contrôles : icône bleue dans un rond blanc avec ombre douce */
+    #new-toolbox {
+        .toolbox-content-items {
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+
+        .toolbox-icon {
+            background: #fff !important;
+            border-radius: 50% !important;
+            border: 0.5px solid var(--translia-line, #D1D1D1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transition: box-shadow .15s ease, background-color .15s ease;
+
+            svg,
+            svg path {
+                fill: var(--translia-blue) !important;
+            }
+
+            &:hover {
+                background: #F3F2FF !important;
+                box-shadow: 0 4px 14px rgba(4, 0, 211, 0.28);
+            }
+        }
+
+        /* Petits chevrons "choisir le périphérique" (micro/caméra) sur blanc */
+        .settings-button-small-icon {
+            background: #fff !important;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15) !important;
+
+            svg,
+            svg path {
+                fill: var(--translia-blue) !important;
+            }
+
+            &:hover svg,
+            &:hover svg path {
+                fill: var(--translia-blue) !important;
+            }
+        }
+
+        /* Bouton "quitter" (raccrocher) : on garde le rond rouge, glyphe blanc */
+        .hangup-button {
+            background-color: #CB2233 !important;
+            border-color: transparent !important;
+            box-shadow: 0 2px 8px rgba(203, 34, 51, 0.25) !important;
+
+            svg,
+            svg path {
+                fill: #fff !important;
+            }
+
+            &:hover {
+                background-color: #E04757 !important;
+            }
+        }
+    }
+}

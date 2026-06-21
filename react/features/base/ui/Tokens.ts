@@ -152,20 +152,20 @@ export const colorMap = {
     speakerStatsAvatarLeft: 'surface05',   // Avatar background for participants who left
 
     // Pre-meeting/Prejoin
-    preMeetingBackground: 'surface02',  // Pre-meeting screen container background
+    preMeetingBackground: '#FFFFFF',    // Pre-meeting screen container background (Translia white)
     preMeetingPreview: 'ui01',          // Video preview in pre-meeting
     prejoinDialogBackground: 'uiBackground', // Prejoin dialog background
     prejoinPreviewBackground: 'uiBackground', // Prejoin video preview background (#040404)
     prejoinDialogDelimiter: 'ui03',     // Prejoin dialog delimiter line
     prejoinDialogDelimiterText: 'text01', // Prejoin dialog delimiter text
-    prejoinTitleText: 'text01',         // Prejoin title text color
-    prejoinRoomNameText: 'text01',      // Prejoin room name text color
+    prejoinTitleText: '#0400D3',        // Prejoin title text color (Translia blue)
+    prejoinRoomNameText: '#0400D3',     // Prejoin room name text color (Translia blue)
     prejoinWarningBackground: 'warning01', // Warning banner background
     prejoinWarningText: 'text04',       // Warning banner text
     prejoinRecordingWarningText: 'text03', // Recording warning text
-    prejoinActionButtonPrimary: 'action01', // Primary action button
-    prejoinActionButtonPrimaryHover: 'action01Hover', // Primary button hover
-    prejoinActionButtonPrimaryText: 'text01', // Primary button text
+    prejoinActionButtonPrimary: '#0400D3', // Primary action button (Translia blue)
+    prejoinActionButtonPrimaryHover: '#0300A8', // Primary button hover (darker blue)
+    prejoinActionButtonPrimaryText: '#FFFFFF', // Primary button text (white on blue)
     prejoinActionButtonSecondary: 'action02', // Secondary action button
     prejoinActionButtonSecondaryHover: 'action02Hover', // Secondary button hover
     prejoinActionButtonSecondaryText: 'text04', // Secondary button text
