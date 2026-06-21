@@ -5,51 +5,79 @@ import { DeepgramTranscriber, type TranscriptSegment } from '../deepgramClient';
 /**
  * Translia live-transcription side panel (maquette: "Transcription en cours").
  *
- * Self-contained for now: pass the conference audio `stream` + the Translia proxy
- * `wsUrl`. Next iteration: mount it in Conference, source the mixed audio from the
- * jitsi-meet track Redux state, and persist segments back to the meeting.
+ * Sources the mixed conference audio `stream` and streams it to the Translia
+ * proxy `wsUrl` (which carries the Deepgram key server-side). The language can be
+ * changed live from the header dropdown; finals are kept across language switches
+ * and persisted server-side as a workspace when the socket closes.
  */
 type Props = {
     stream?: MediaStream;
     wsUrl: string;
     lang?: string;
+    meeting?: string;
     onHide?: () => void;
+    onLang?: (lang: string) => void;
 };
 
 const BLUE = '#0400D3';
 const MAGENTA = '#D800D5';
 
-export default function TranscriptionPanel({ stream, wsUrl, lang = 'fr', onHide }: Props) {
-    const [finals, setFinals] = useState<string[]>([]);
-    const [interim, setInterim] = useState('');
-    const [paused, setPaused] = useState(false);
-    const [state, setState] = useState<string>('connecting');
+const LANGS: Array<{ code: string; label: string; }> = [
+    { code: 'fr', label: 'Français' },
+    { code: 'en', label: 'English' },
+    { code: 'es', label: 'Español' },
+    { code: 'de', label: 'Deutsch' },
+    { code: 'it', label: 'Italiano' },
+    { code: 'pt', label: 'Português' },
+    { code: 'nl', label: 'Nederlands' },
+    { code: 'zh', label: '中文' },
+    { code: 'ja', label: '日本語' },
+    { code: 'ar', label: 'العربية' }
+];
+
+export default function TranscriptionPanel({ stream, wsUrl, lang = 'fr', meeting, onHide, onLang }: Props) {
+    const [ finals, setFinals ] = useState<string[]>([]);
+    const [ interim, setInterim ] = useState('');
+    const [ paused, setPaused ] = useState(false);
+    const [ state, setState ] = useState<string>('connecting');
     const ref = useRef<DeepgramTranscriber | null>(null);
     const bodyRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (!stream) return;
+        if (!stream) {
+            return;
+        }
         const t = new DeepgramTranscriber({
-            wsUrl, lang,
+            wsUrl, lang, meeting,
             onState: setState,
             onSegment: (s: TranscriptSegment) => {
-                if (s.isFinal) { setFinals(f => [ ...f, s.text ]); setInterim(''); }
-                else setInterim(s.text);
+                if (s.isFinal) {
+                    setFinals(f => [ ...f, s.text ]); setInterim('');
+                } else {
+                    setInterim(s.text);
+                }
             }
         });
+
         ref.current = t;
         t.start(stream);
+
         return () => t.stop();
-    }, [ stream, wsUrl, lang ]);
+    }, [ stream, wsUrl, lang, meeting ]);
 
     useEffect(() => {
         bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight });
     }, [ finals, interim ]);
 
     const toggle = () => {
-        if (!ref.current) return;
-        if (paused) { ref.current.resume(); setPaused(false); }
-        else { ref.current.pause(); setPaused(true); }
+        if (!ref.current) {
+            return;
+        }
+        if (paused) {
+            ref.current.resume(); setPaused(false);
+        } else {
+            ref.current.pause(); setPaused(true);
+        }
     };
 
     return (
@@ -61,6 +89,14 @@ export default function TranscriptionPanel({ stream, wsUrl, lang = 'fr', onHide 
                     <path d = 'M12.5 4.32H8.25c-.27 0-.53.23-.53.51 0 .44.27.57.53.57h4.25c.4 0 .53-.23.53-.52 0-.28-.13-.56-.53-.56ZM12.5 6.47H8.25c-.27 0-.53.23-.53.52 0 .43.27.57.53.57h4.25c.4 0 .53-.23.53-.52 0-.28-.13-.56-.53-.56Z' fill = { MAGENTA } />
                 </svg>
                 <span style = {{ flex: 1 }}>Transcription en cours</span>
+                <select
+                    onChange = { e => onLang?.(e.target.value) }
+                    style = {{ border: '1px solid #D1D1D1', borderRadius: 8, fontSize: 12, color: BLUE,
+                        padding: '2px 4px', background: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}
+                    title = 'Langue de transcription'
+                    value = { lang }>
+                    { LANGS.map(l => <option key = { l.code } value = { l.code }>{ l.label }</option>) }
+                </select>
                 <button onClick = { onHide } title = 'Masquer'
                     style = {{ background: 'none', border: 'none', cursor: 'pointer', color: '#555' }}>✕</button>
             </div>

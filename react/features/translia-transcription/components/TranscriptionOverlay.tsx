@@ -1,26 +1,69 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { IReduxState } from '../../app/types';
-import { getLocalJitsiAudioTrack } from '../../base/tracks/functions.any';
+import { MEDIA_TYPE } from '../../base/media/constants';
+import { isLocalParticipantModerator } from '../../base/participants/functions';
+import { AudioMixer } from '../audioMixer';
+import { getTransliaContext, selectJwt } from '../transliaJwt';
 
 import TranscriptionPanel from './TranscriptionPanel';
 
 /**
  * Floating toggle + live transcription side panel, mounted in Conference.
  *
- * Audio source (MVP): the local participant's mic. Next iteration: mix all remote
- * audio tracks so the whole meeting is transcribed. The Deepgram key stays on the
- * Translia backend — we only talk to its WS proxy.
+ * Audio source: the WHOLE meeting — the local mic AND every remote participant,
+ * mixed via the Web Audio API (see {@link AudioMixer}). The Deepgram key stays
+ * on the Translia backend; we only talk to its WS proxy, whose URL + language +
+ * meeting id come from the signed JWT (Translia handoff), not a hardcoded host.
+ *
+ * Only a moderator can start/stop transcription (it bills the organizer's plan).
  */
-const WS_URL: string
-    = (typeof window !== 'undefined' && (window as any).TRANSLIA_TRANSCRIBE_WS)
-    || 'wss://translia.devanchor.company/api/transcribe/stream';
-
 export default function TranscriptionOverlay() {
     const [ open, setOpen ] = useState(false);
-    const audioTrack = useSelector((state: IReduxState) => getLocalJitsiAudioTrack(state));
-    const stream = (audioTrack as any)?.getOriginalStream?.() as MediaStream | undefined;
+    const isModerator = useSelector(isLocalParticipantModerator);
+    const jwt = useSelector(selectJwt);
+    const tracks = useSelector((state: IReduxState) => state['features/base/tracks']);
+    const ctx = useMemo(() => getTransliaContext(jwt), [ jwt ]);
+    const [ lang, setLang ] = useState<string>(ctx.lang);
+
+    // Every audio MediaStreamTrack currently in the conference (local + remote).
+    const audioTracks = useMemo(() => (tracks || [])
+        .filter((t: any) => t.mediaType === MEDIA_TYPE.AUDIO && t.jitsiTrack)
+        .map((t: any) => {
+            try {
+                return t.jitsiTrack.getTrack?.() as MediaStreamTrack;
+            } catch {
+                return undefined;
+            }
+        })
+        .filter(Boolean) as MediaStreamTrack[], [ tracks ]);
+
+    const mixerRef = useRef<AudioMixer | null>(null);
+    const [ stream, setStream ] = useState<MediaStream | undefined>();
+
+    useEffect(() => {
+        if (!open) {
+            mixerRef.current?.close();
+            mixerRef.current = null;
+            setStream(undefined);
+
+            return;
+        }
+        if (!mixerRef.current) {
+            mixerRef.current = new AudioMixer();
+            setStream(mixerRef.current.stream);
+        }
+        mixerRef.current.setTracks(audioTracks);
+    }, [ open, audioTracks ]);
+
+    // Tear down the mixer if the overlay unmounts mid-transcription.
+    useEffect(() => () => mixerRef.current?.close(), []);
+
+    // Transcription is a moderator-only control.
+    if (!isModerator) {
+        return null;
+    }
 
     if (!open) {
         return (
@@ -42,10 +85,12 @@ export default function TranscriptionOverlay() {
     return (
         <div style = {{ position: 'fixed', top: 76, right: 16, bottom: 96, zIndex: 250 }}>
             <TranscriptionPanel
-                lang = 'fr'
+                lang = { lang }
+                meeting = { ctx.meeting }
                 onHide = { () => setOpen(false) }
+                onLang = { setLang }
                 stream = { stream }
-                wsUrl = { WS_URL } />
+                wsUrl = { ctx.transcribeUrl } />
         </div>
     );
 }

@@ -11,6 +11,7 @@ export type TranscriptSegment = { text: string; isFinal: boolean };
 export type DeepgramOpts = {
     wsUrl: string;                 // e.g. wss://translia.devanchor.company/api/transcribe/stream
     lang?: string;
+    meeting?: string;              // meeting id — lets the proxy persist the transcript
     onSegment: (s: TranscriptSegment) => void;
     onState?: (s: 'connecting' | 'ready' | 'paused' | 'stopped' | 'error') => void;
 };
@@ -26,7 +27,12 @@ export class DeepgramTranscriber {
 
     async start(stream: MediaStream): Promise<void> {
         this.opts.onState?.('connecting');
-        this.ws = new WebSocket(`${this.opts.wsUrl}?lang=${encodeURIComponent(this.opts.lang || 'fr')}`);
+        const q = new URLSearchParams({ lang: this.opts.lang || 'fr' });
+
+        if (this.opts.meeting) {
+            q.set('meeting', this.opts.meeting);
+        }
+        this.ws = new WebSocket(`${this.opts.wsUrl}?${q.toString()}`);
         this.ws.binaryType = 'arraybuffer';
         this.ws.onmessage = ev => {
             try {

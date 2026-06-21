@@ -1,16 +1,23 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useSelector } from 'react-redux';
+
+import { getTransliaContext, selectJwt } from '../transliaJwt';
 
 /**
  * Translia credit indicator shown in the conference top bar (next to the timer).
- * The value is populated by the host (Translia) via `window.TRANSLIA_CREDIT`
- * (e.g. remaining minutes / "instant" credit). Placeholder until wired to the API.
+ * The remaining transcription credit (minutes) is carried in the signed JWT
+ * (`context.credit`) by the Translia handoff; we fall back to `window.TRANSLIA_CREDIT`
+ * when there is no JWT. Hidden entirely when unknown / unlimited.
  */
 export default function CreditIndicator() {
-    const credit = (typeof window !== 'undefined' && (window as any).TRANSLIA_CREDIT) || null;
+    const jwt = useSelector(selectJwt);
+    const credit = useMemo(() => getTransliaContext(jwt).credit, [ jwt ]);
 
-    if (!credit) {
+    if (credit === null || credit === undefined || credit === '') {
         return null;
     }
+
+    const label = typeof credit === 'number' ? `${credit} min` : String(credit);
 
     return (
         <div
@@ -24,7 +31,7 @@ export default function CreditIndicator() {
                     stroke = '#0400D3'
                     strokeWidth = '0.25' />
             </svg>
-            <span>{ credit }</span>
+            <span>{ label }</span>
         </div>
     );
 }
