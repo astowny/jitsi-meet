@@ -6,7 +6,34 @@
  * relays. We send 16 kHz mono linear16 PCM; Deepgram returns transcript JSON.
  */
 
-export type TranscriptSegment = { text: string; isFinal: boolean };
+export type TranscriptSegment = { text: string; isFinal: boolean; speaker?: number };
+
+type SpeakerRun = { speaker: number; text: string };
+
+// Split a Deepgram alternative into consecutive same-speaker runs. Falls back to
+// the plain transcript (speaker -1) when diarization words are absent.
+function splitBySpeaker(alt: any): SpeakerRun[] {
+    const words = alt?.words;
+
+    if (!Array.isArray(words) || !words.length) {
+        return alt?.transcript ? [ { speaker: -1, text: alt.transcript } ] : [];
+    }
+    const runs: SpeakerRun[] = [];
+
+    for (const w of words) {
+        const speaker = typeof w.speaker === 'number' ? w.speaker : -1;
+        const token = w.punctuated_word || w.word || '';
+        const last = runs[runs.length - 1];
+
+        if (last && last.speaker === speaker) {
+            last.text += ` ${token}`;
+        } else {
+            runs.push({ speaker, text: token });
+        }
+    }
+
+    return runs;
+}
 
 export type DeepgramOpts = {
     wsUrl: string;                 // e.g. wss://translia.devanchor.company/api/transcribe/stream
@@ -40,7 +67,14 @@ export class DeepgramTranscriber {
                 if (m.type === 'ready') { this.opts.onState?.('ready'); return; }
                 if (m.type === 'error') { this.opts.onState?.('error'); return; }
                 const alt = m.channel?.alternatives?.[0];
-                if (alt?.transcript) this.opts.onSegment({ text: alt.transcript, isFinal: Boolean(m.is_final) });
+                if (!alt?.transcript) { return; }
+                if (m.is_final) {
+                    for (const run of splitBySpeaker(alt)) {
+                        this.opts.onSegment({ text: run.text, isFinal: true, speaker: run.speaker });
+                    }
+                } else {
+                    this.opts.onSegment({ text: alt.transcript, isFinal: false });
+                }
             } catch { /* ignore non-JSON */ }
         };
         this.ws.onclose = () => this.opts.onState?.('stopped');

@@ -35,8 +35,10 @@ const LANGS: Array<{ code: string; label: string; }> = [
     { code: 'ar', label: 'العربية' }
 ];
 
+type Final = { speaker?: number; text: string; };
+
 export default function TranscriptionPanel({ stream, wsUrl, lang = 'fr', meeting, onHide, onLang }: Props) {
-    const [ finals, setFinals ] = useState<string[]>([]);
+    const [ finals, setFinals ] = useState<Final[]>([]);
     const [ interim, setInterim ] = useState('');
     const [ paused, setPaused ] = useState(false);
     const [ state, setState ] = useState<string>('connecting');
@@ -52,7 +54,7 @@ export default function TranscriptionPanel({ stream, wsUrl, lang = 'fr', meeting
             onState: setState,
             onSegment: (s: TranscriptSegment) => {
                 if (s.isFinal) {
-                    setFinals(f => [ ...f, s.text ]); setInterim('');
+                    setFinals(f => [ ...f, { speaker: s.speaker, text: s.text } ]); setInterim('');
                 } else {
                     setInterim(s.text);
                 }
@@ -104,7 +106,22 @@ export default function TranscriptionPanel({ stream, wsUrl, lang = 'fr', meeting
 
             <div ref = { bodyRef } style = {{ flex: 1, overflowY: 'auto', fontSize: 14, lineHeight: '18px',
                 color: MAGENTA, textAlign: 'justify' }}>
-                { finals.join(' ') }{ interim ? <span style = {{ opacity: .6 }}> { interim }</span> : null }
+                { finals.map((seg, i) => {
+                    const prev = finals[i - 1];
+                    const showLabel = typeof seg.speaker === 'number' && seg.speaker >= 0
+                        && (!prev || prev.speaker !== seg.speaker);
+
+                    return (
+                        <React.Fragment key = { i }>
+                            { showLabel
+                                ? <div style = {{ color: BLUE, fontWeight: 600, fontSize: 12, marginTop: i ? 6 : 0 }}>
+                                    Locuteur { (seg.speaker as number) + 1 }</div>
+                                : null }
+                            <span>{ seg.text } </span>
+                        </React.Fragment>
+                    );
+                }) }
+                { interim ? <span style = {{ opacity: .6 }}>{ interim }</span> : null }
                 { !finals.length && !interim ? <span style = {{ color: '#B9B6B6' }}>{ state === 'ready' ? '…' : 'Connexion…' }</span> : null }
             </div>
 
