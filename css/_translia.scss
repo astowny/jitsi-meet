@@ -1,0 +1,26 @@
+/* ── Translia brand (translia-meet) — starter overrides, iterative ── */
+@font-face {
+    font-family: 'Lexend';
+    src: url('../fonts/Lexend.ttf') format('truetype-variations');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
+    --translia-blue: #0400D3;
+    --translia-magenta: #D800D5;
+}
+
+body,
+.toolbox-content,
+.premeeting-screen,
+.subject-text {
+    font-family: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Primary / toggled actions → Translia blue */
+.toolbox-button.toggled .toolbox-icon,
+.primary {
+    background-color: var(--translia-blue);
+}
