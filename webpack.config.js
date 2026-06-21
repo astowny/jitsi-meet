@@ -274,10 +274,22 @@ function getDevServerConfig() {
             overlay: {
                 errors: true,
                 warnings: false
-            }
+            },
+
+            // When served behind an external reverse proxy (Traefik) on a public
+            // host, point the HMR websocket at that host so live-reload works.
+            ...(process.env.WEBPACK_DEV_PUBLIC_HOST ? {
+                webSocketURL: {
+                    hostname: process.env.WEBPACK_DEV_PUBLIC_HOST,
+                    port: 443,
+                    protocol: 'wss'
+                }
+            } : {})
         },
         allowedHosts: 'all',
-        host: 'localhost',
+
+        // Bind to 0.0.0.0 so an external proxy can reach it (default: localhost).
+        host: process.env.WEBPACK_DEV_HOST || 'localhost',
         hot: true,
         proxy: [
             {
@@ -290,7 +302,8 @@ function getDevServerConfig() {
                 }
             }
         ],
-        server: process.env.CODESPACES ? 'http' : 'https',
+        // Plain HTTP when behind a TLS-terminating proxy (Traefik); HTTPS otherwise.
+        server: (process.env.WEBPACK_DEV_SERVER_HTTP || process.env.CODESPACES) ? 'http' : 'https',
         setupMiddlewares: (middlewares, _devServer) => middlewares.filter(
             m => m.name !== 'cross-origin-header-check'
         ),
