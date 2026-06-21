@@ -166,9 +166,9 @@ export const colorMap = {
     prejoinActionButtonPrimary: '#0400D3', // Primary action button (Translia blue)
     prejoinActionButtonPrimaryHover: '#0300A8', // Primary button hover (darker blue)
     prejoinActionButtonPrimaryText: '#FFFFFF', // Primary button text (white on blue)
-    prejoinActionButtonSecondary: 'action02', // Secondary action button
-    prejoinActionButtonSecondaryHover: 'action02Hover', // Secondary button hover
-    prejoinActionButtonSecondaryText: 'text04', // Secondary button text
+    prejoinActionButtonSecondary: '#FFFFFF', // Secondary action button / dropdown panel (Translia white)
+    prejoinActionButtonSecondaryHover: '#EFEEFF', // Secondary button hover (light blue tint)
+    prejoinActionButtonSecondaryText: '#0400D3', // Secondary button text (Translia blue)
     prejoinActionButtonDanger: 'actionDanger', // Danger button (leave)
     prejoinActionButtonDisabled: 'disabled01', // Disabled button
     prejoinCountryPickerBackground: 'ui01', // Country picker background
@@ -552,7 +552,7 @@ export const font = {
 };
 
 export const shape = {
-    borderRadius: 6,
+    borderRadius: 10,
     circleRadius: 50,
     boxShadow: 'inset 0px -1px 0px rgba(255, 255, 255, 0.15)'
 };

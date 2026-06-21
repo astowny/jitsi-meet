@@ -136,4 +136,45 @@ button.primary {
             }
         }
     }
+
+    /* Menu déroulant "Rejoindre" (… sans micro) → carte blanche, texte bleu */
+    .popover,
+    .popover-content {
+        button,
+        [role='button'] {
+            font-family: var(--translia-font);
+        }
+    }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Dropdowns / menus de la visioconférence → look Translia
+   (coins arrondis, police Lexend, ombre douce, accents bleus).
+   Classes stables : .popover-content, .popupmenu__contents, .overflow-menu.
+   ────────────────────────────────────────────────────────────────────────── */
+.popover-content,
+.popupmenu__contents,
+.overflow-menu {
+    font-family: var(--translia-font) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(4, 0, 211, 0.06) !important;
+    overflow: hidden;
+}
+
+/* Items de menu : survol teinté Translia + police */
+.overflow-menu .overflow-menu-item {
+    font-family: var(--translia-font);
+
+    &:hover {
+        background-color: rgba(4, 0, 211, 0.08) !important;
+    }
+}
+
+/* Selects / champs déroulants (réglages, langue, périphériques) → arrondis + Lexend */
+.premeeting-screen select,
+.premeeting-screen .select,
+select,
+.select-container,
+[class*='selectContainer'] {
+    font-family: var(--translia-font) !important;
 }
