@@ -24,3 +24,28 @@ body,
 .primary {
     background-color: var(--translia-blue);
 }
+
+/* Conference top bar (subject + timer + credit) */
+.subject {
+    .subject-info-container .subject-text--content {
+        color: #fff;
+    }
+}
+
+/* Toolbox hover / active accents → Translia blue */
+.toolbox-content .toolbox-button:hover .toolbox-icon {
+    background-color: rgba(4, 0, 211, 0.15);
+}
+
+/* Primary dialog / pane actions */
+.modal-dialog-form .primary,
+button.primary {
+    background-color: var(--translia-blue);
+    border-color: var(--translia-blue);
+}
+
+/* Chat + participants pane headers */
+.chat-header,
+.participants_pane-header {
+    color: var(--translia-blue);
+}

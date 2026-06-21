@@ -21,6 +21,7 @@ import ConferenceInfoContainer from './ConferenceInfoContainer';
 import InsecureRoomNameLabel from './InsecureRoomNameLabel';
 import RaisedHandsCountLabel from './RaisedHandsCountLabel';
 import SpeakerStatsLabel from './SpeakerStatsLabel';
+import CreditIndicator from '../../../translia-transcription/components/CreditIndicator';
 import SubjectText from './SubjectText';
 import ToggleTopPanelLabel from './ToggleTopPanelLabel';
 
@@ -86,6 +87,10 @@ const COMPONENTS: Array<{
     {
         Component: ConferenceTimer,
         id: 'conference-timer'
+    },
+    {
+        Component: CreditIndicator,
+        id: 'translia-credit'
     },
     {
         Component: TimeTimerPill,
