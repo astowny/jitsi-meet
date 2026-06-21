@@ -273,7 +273,16 @@ function getDevServerConfig() {
         client: {
             overlay: {
                 errors: true,
-                warnings: false
+                warnings: false,
+
+                // Don't let errors thrown by browser extensions (e.g. a crypto
+                // wallet's injected inpage.js) hijack the dev overlay and block
+                // the prejoin/meeting screen. Real app runtime errors still show.
+                runtimeErrors: (error) => {
+                    const text = `${error?.stack || ''} ${error?.message || error || ''}`;
+
+                    return !text.includes('chrome-extension://') && !text.includes('moz-extension://');
+                }
             },
 
             // When served behind an external reverse proxy (Traefik) on a public
